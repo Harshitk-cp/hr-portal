@@ -3,6 +3,11 @@ export const server = "http://localhost:8000/api/v1";
 const apiList = {
   login: `${server}/users/login`,
   signup: `${server}/users/signup`,
+  getUserDetails: `${server}/users/`,
+  getJobs: `${server}/jobs/`,
+  getApplications: `${server}/jobs/`,
+  getReview: `${server}/review/`,
+  deleteJob: `${server}/jobs/`,
 };
 
 export default apiList;

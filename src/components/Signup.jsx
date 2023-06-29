@@ -18,6 +18,14 @@ const useStyles = createStyles((theme) => ({
     width: "100%",
   },
 
+  signupMainDiv: {
+    width: "100%",
+    height: "100%",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
   formContainer: {
     display: "flex",
     flexDirection: "column",
@@ -40,6 +48,7 @@ const useStyles = createStyles((theme) => ({
 }));
 
 const Signup = (props) => {
+  props.funcNav(false);
   const { classes } = useStyles();
 
   const [loggedin, setLoggedin] = useState(isAuth());
@@ -95,7 +104,6 @@ const Signup = (props) => {
   };
 
   const handleRegister = () => {
-    console.log(signupDetails);
     const tmpErrorHandler = {};
     Object.keys(inputErrorHandler).forEach((obj) => {
       if (inputErrorHandler[obj].required && inputErrorHandler[obj].untouched) {
@@ -131,13 +139,10 @@ const Signup = (props) => {
       return tmpErrorHandler[obj].error;
     });
 
-    console.log(updatedDetails);
-
     if (verified) {
       axios
         .post(apiList.signup, updatedDetails)
         .then((response) => {
-          console.log(response);
           localStorage.setItem("token", response.data.token);
           setLoggedin(isAuth());
 
@@ -145,14 +150,12 @@ const Signup = (props) => {
             title: "success",
             message: "Logged in successfully",
           });
-          console.log(response);
         })
         .catch((err) => {
           notifications.show({
             title: "error",
             message: err.response.data.message,
           });
-          console.log(err.response);
         });
     } else {
       setInputErrorHandler(tmpErrorHandler);
@@ -163,91 +166,96 @@ const Signup = (props) => {
     }
   };
 
-  return loggedin ? (
-    <div className={classes.formContainer}>
-      <TextInput
-        label="Name"
-        placeholder="Enter Name"
-        value={signupDetails.name}
-        onChange={(event) => handleInput("name", event.target.value)}
-        className={classes.inputBox}
-        error={inputErrorHandler.name.message}
-        onBlur={(event) => {
-          if (event.target.value === "") {
-            handleInputError("name", true, "Name is required");
-          } else {
-            handleInputError("name", false, "");
-          }
-        }}
-      />
-
-      <TextInput
-        label="Email"
-        placeholder="Enter Email"
-        value={signupDetails.email}
-        onChange={(event) => handleInput("email", event.target.value)}
-        onBlur={(event) => {
-          if (event.target.value === "") {
-            handleInputError("email", true, "Email is required");
-          } else {
-            const re =
-              /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-            if (re.test(String(event.target.value).toLowerCase())) {
-              handleInputError("email", false, "");
+  return !loggedin ? (
+    <div className={classes.signupMainDiv}>
+      <div className={classes.formContainer}>
+        <TextInput
+          label="Name"
+          placeholder="Enter Name"
+          value={signupDetails.name}
+          onChange={(event) => handleInput("name", event.target.value)}
+          className={classes.inputBox}
+          error={inputErrorHandler.name.message}
+          onBlur={(event) => {
+            if (event.target.value === "") {
+              handleInputError("name", true, "Name is required");
             } else {
-              handleInputError("email", true, "Incorrect email format");
+              handleInputError("name", false, "");
             }
-          }
-        }}
-        error={inputErrorHandler.email.message}
-        className={classes.inputBox}
-      />
+          }}
+        />
 
-      <PasswordInput
-        label="Password"
-        value={signupDetails.password}
-        onChange={(event) => handleInput("password", event.target.value)}
-        className={classes.inputBox}
-        error={inputErrorHandler.password.message}
-        onBlur={(event) => {
-          if (event.target.value === "") {
-            handleInputError("password", true, "Password is required");
-          } else {
-            if (event.target.value.length > 6) {
+        <TextInput
+          label="Email"
+          placeholder="Enter Email"
+          value={signupDetails.email}
+          onChange={(event) => handleInput("email", event.target.value)}
+          onBlur={(event) => {
+            if (event.target.value === "") {
+              handleInputError("email", true, "Email is required");
+            } else {
+              const re =
+                /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+              if (re.test(String(event.target.value).toLowerCase())) {
+                handleInputError("email", false, "");
+              } else {
+                handleInputError("email", true, "Incorrect email format");
+              }
+            }
+          }}
+          error={inputErrorHandler.email.message}
+          className={classes.inputBox}
+        />
+
+        <PasswordInput
+          label="Password"
+          value={signupDetails.password}
+          onChange={(event) => handleInput("password", event.target.value)}
+          className={classes.inputBox}
+          error={inputErrorHandler.password.message}
+          onBlur={(event) => {
+            if (event.target.value === "") {
+              handleInputError("password", true, "Password is required");
+            } else {
+              if (event.target.value.length > 6) {
+                handleInputError("password", false, "");
+              } else {
+                handleInputError("passsword", true, "Cannot be less than 6.");
+              }
+              const re =
+                /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/im;
+              if (re.test(String(event.target.value).toLowerCase())) {
+                handleInputError("email", false, "");
+              } else {
+                handleInputError(
+                  "email",
+                  true,
+                  "Incorrect phone number format"
+                );
+              }
+            }
+          }}
+        />
+
+        <TextInput
+          label="Phone Number(optional)"
+          className={classes.inputBox}
+          value={phone}
+          onChange={(event) => setPhone(event.target.value)}
+          onBlur={(event) => {
+            if (event.target.value === "") {
               handleInputError("password", false, "");
             } else {
-              handleInputError("passsword", true, "Cannot be less than 6.");
+              if (event.target.value.length == 10) {
+                handleInputError("password", false, "");
+              } else {
+                handleInputError("passsword", true, "Invalid Phone Number");
+              }
             }
-            const re =
-              /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/im;
-            if (re.test(String(event.target.value).toLowerCase())) {
-              handleInputError("email", false, "");
-            } else {
-              handleInputError("email", true, "Incorrect phone number format");
-            }
-          }
-        }}
-      />
+          }}
+        />
 
-      <TextInput
-        label="Phone Number(optional)"
-        className={classes.inputBox}
-        value={phone}
-        onChange={(event) => setPhone(event.target.value)}
-        onBlur={(event) => {
-          if (event.target.value === "") {
-            handleInputError("password", false, "");
-          } else {
-            if (event.target.value.length == 10) {
-              handleInputError("password", false, "");
-            } else {
-              handleInputError("passsword", true, "Invalid Phone Number");
-            }
-          }
-        }}
-      />
-
-      {/* <FileUploadInput
+        {/* <FileUploadInput
             className={classes.inputBox}
             label="Profile Photo (.jpg/.png)"
             icon={<FaceIcon />}
@@ -263,16 +271,17 @@ const Signup = (props) => {
             identifier={"profile"}
           /> */}
 
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={() => {
-          handleRegister();
-        }}
-        className={classes.submitButton}
-      >
-        Signup
-      </Button>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => {
+            handleRegister();
+          }}
+          className={classes.submitButton}
+        >
+          Signup
+        </Button>
+      </div>
     </div>
   ) : (
     <Navigate to="/login" />
