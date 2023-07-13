@@ -8,6 +8,9 @@ const apiList = {
   getApplications: `${server}/jobs/`,
   getReview: `${server}/review/`,
   deleteJob: `${server}/jobs/`,
+  updateJob: `${server}/jobs/`,
+  updateApplication: `${server}/jobs/`,
+  createJob: `${server}/jobs/`,
 };
 
 export default apiList;

@@ -11,6 +11,7 @@ import "./App.css";
 import Signout from "./components/Signout.jsx";
 import { useState } from "react";
 import Applications from "./components/Applications.jsx";
+import CreateJobs from "./components/CreateJobs.jsx";
 
 function App() {
   const [showNav, setShowNav] = useState(true);
@@ -36,8 +37,13 @@ function App() {
               path="/signout"
               element={<Signout funcNav={setShowNav} />}
             ></Route>
-            <Route exact path="/home" element={<Home />}></Route>
+            <Route
+              exact
+              path="/home"
+              element={<Home funcNav={setShowNav} />}
+            ></Route>
             <Route exact path="/jobs" element={<Jobs />}></Route>
+            <Route exact path="/createJob" element={<CreateJobs />}></Route>
             <Route
               exact
               path="/applications"

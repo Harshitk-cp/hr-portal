@@ -1,7 +1,6 @@
 import {
   Navbar,
   Group,
-  Code,
   ScrollArea,
   createStyles,
   rem,
@@ -22,7 +21,7 @@ const navData = [
     icon: PersonIcon,
     links: [
       { label: "All Jobs", link: "/jobs" },
-      { label: "Create Jobs", link: "/" },
+      { label: "Create Jobs", link: "/createJob" },
     ],
   },
   {
@@ -78,7 +77,12 @@ export function NavbarNested() {
   ));
 
   return (
-    <Navbar height="100%" width={{ sm: 320 }} p="md" className={classes.navbar}>
+    <Navbar
+      height="100vh"
+      width={{ sm: 320 }}
+      p="md"
+      className={classes.navbar}
+    >
       <Navbar.Section className={classes.header}>
         <Group position="apart">
           <Text>Application Tracker</Text>

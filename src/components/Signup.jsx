@@ -1,11 +1,5 @@
-import { useState, useContext } from "react";
-import {
-  Button,
-  createStyles,
-  PasswordInput,
-  Text,
-  TextInput,
-} from "@mantine/core";
+import { useState, useContext, useEffect } from "react";
+import { Button, createStyles, PasswordInput, TextInput } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import axios from "axios";
 import { Navigate } from "react-router-dom";
@@ -32,7 +26,7 @@ const useStyles = createStyles((theme) => ({
     alignItems: "center",
     justifyContent: "center",
     width: "400px",
-    background: "#ffffff",
+    background: theme.colors.dark[5],
     padding: "40px",
     borderRadius: "8px",
   },
@@ -43,12 +37,14 @@ const useStyles = createStyles((theme) => ({
     width: "300px",
     color: "white",
     marginTop: "20px",
-    background: "#1c1d26",
+    background: theme.colors.blue[7],
   },
 }));
 
 const Signup = (props) => {
-  props.funcNav(false);
+  useEffect(() => {
+    props.funcNav(false);
+  }, []);
   const { classes } = useStyles();
 
   const [loggedin, setLoggedin] = useState(isAuth());
@@ -143,13 +139,11 @@ const Signup = (props) => {
       axios
         .post(apiList.signup, updatedDetails)
         .then((response) => {
-          localStorage.setItem("token", response.data.token);
-          setLoggedin(isAuth());
-
           notifications.show({
             title: "success",
             message: "Logged in successfully",
           });
+          window.location.pathname = "/login";
         })
         .catch((err) => {
           notifications.show({
@@ -222,17 +216,6 @@ const Signup = (props) => {
               } else {
                 handleInputError("passsword", true, "Cannot be less than 6.");
               }
-              const re =
-                /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/im;
-              if (re.test(String(event.target.value).toLowerCase())) {
-                handleInputError("email", false, "");
-              } else {
-                handleInputError(
-                  "email",
-                  true,
-                  "Incorrect phone number format"
-                );
-              }
             }
           }}
         />
@@ -242,38 +225,10 @@ const Signup = (props) => {
           className={classes.inputBox}
           value={phone}
           onChange={(event) => setPhone(event.target.value)}
-          onBlur={(event) => {
-            if (event.target.value === "") {
-              handleInputError("password", false, "");
-            } else {
-              if (event.target.value.length == 10) {
-                handleInputError("password", false, "");
-              } else {
-                handleInputError("passsword", true, "Invalid Phone Number");
-              }
-            }
-          }}
         />
-
-        {/* <FileUploadInput
-            className={classes.inputBox}
-            label="Profile Photo (.jpg/.png)"
-            icon={<FaceIcon />}
-            // value={files.profileImage}
-            // onChange={(event) =>
-            //   setFiles({
-            //     ...files,
-            //     profileImage: event.target.files[0],
-            //   })
-            // }
-            uploadTo={apiList.uploadProfileImage}
-            handleInput={handleInput}
-            identifier={"profile"}
-          /> */}
 
         <Button
           variant="contained"
-          color="primary"
           onClick={() => {
             handleRegister();
           }}
@@ -289,24 +244,3 @@ const Signup = (props) => {
 };
 
 export default Signup;
-
-// {/* <Grid item>
-//           <PasswordInput
-//             label="Re-enter Password"
-//             value={signupDetails.tmpPassword}
-//             onChange={(event) => handleInput("tmpPassword", event.target.value)}
-//             className={classes.inputBox}
-//             labelWidth={140}
-//             helperText={inputErrorHandler.tmpPassword.message}
-//             error={inputErrorHandler.tmpPassword.error}
-//             onBlur={(event) => {
-//               if (event.target.value !== signupDetails.password) {
-//                 handleInputError(
-//                   "tmpPassword",
-//                   true,
-//                   "Passwords are not same."
-//                 );
-//               }
-//             }}
-//           />
-//         </Grid> */}

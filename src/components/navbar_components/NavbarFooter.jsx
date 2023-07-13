@@ -6,7 +6,6 @@ import {
   createStyles,
 } from "@mantine/core";
 import { ArrowRightIcon } from "@radix-ui/react-icons";
-import { useNavigate } from "react-router-dom";
 
 const useStyles = createStyles((theme) => ({
   user: {
@@ -24,10 +23,10 @@ const useStyles = createStyles((theme) => ({
   },
 }));
 
+// eslint-disable-next-line react/prop-types
 export function UserButton({ image, name, email, icon, ...others }) {
   const { classes } = useStyles();
-  let navigateTo = useNavigate();
-  const handleClick = (location) => {
+  const handleClick = () => {
     // navigateTo("/signout");
     window.location.pathname = "/signout";
   };

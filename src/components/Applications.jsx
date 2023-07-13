@@ -5,7 +5,7 @@ import axios from "axios";
 import apiList from "../lib/apiList";
 import {
   Button,
-  Loader,
+  Modal,
   Paper,
   Text,
   TextInput,
@@ -42,15 +42,27 @@ const useStyles = createStyles((theme) => ({
   searchBar: {
     marginBottom: theme.spacing.md,
   },
+  noJobsMessage: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    width: "100%",
+    height: "200px",
+    backgroundColor: theme.colors.dark[6],
+    marginTop: "20px",
+  },
 }));
 
-const Applications = (props) => {
+const Applications = () => {
   const [applications, setApplications] = useState([]);
+  const [application, setApplication] = useState([]);
   const { classes } = useStyles();
   const [expandedUser, setExpandedUser] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [originalApplications, setOriginalApplications] = useState([]);
   const [reviewResponses, setReviewResponses] = useState({});
+  const [opened, setOpened] = useState(false);
+  const [action, setAction] = useState("");
 
   useEffect(() => {
     getData();
@@ -59,10 +71,6 @@ const Applications = (props) => {
   useEffect(() => {
     filterApplications();
   }, [searchTerm]);
-
-  const handleSearch = () => {
-    filterApplications();
-  };
 
   const filterApplications = () => {
     if (searchTerm.trim() === "") {
@@ -119,8 +127,6 @@ const Applications = (props) => {
         userId: userId,
         description: description,
       });
-      const reviewResponse =
-        "I am Harshit Kumar, a skilled and dedicated professional with a strong technical background. I have expertise in various programming languages such as Java, Kotlin, JavaScript, XML, and HTML. I am proficient in utilizing frameworks and technologies including Android Studio, Gradle, Node.JS, ExpressJS, MySQL, MongoDB, Rest API, and WebSockets. As a Flutter Developer Intern at Finplify, I had the opportunity to develop frontend applications for iOS and Android using the Flutter framework. I successfully integrated the RazorPay payment gateway, enabling seamless digital gold purchases. During my tenure as a Software Developer Intern at EvrFin, I developed an Android app to streamline financial management. I also hosted the app on the Google Play Store. I integrated the MoEngage SDK, a customer engagement platform, and utilized AWS S3 for secure storage of confidential user data. As a Mobile Developer Intern at IBDTD, I built Android apps using Android Studio, Java, and Kotlin. I worked on UIs made using XML, Jetpack with Data Binding and View Binding. I utilized Retrofit for making REST API requests and implemented WebSockets for real-time data updates. I always strive to write clean and maintainable code using the MVVM architecture. In addition to my internships, I have worked on various projects, including an online multiplayer Ping-Pong game developed using HTML, CSS, and JavaScript. I built the backend using NodeJS and established real-time communication between the client and server through WebSockets. I also developed a group live chat application where I integrated the frontend application using OkHTTP client and implemented end-to-end encryption (AES Cryptography) for secure message exchange.";
 
       const _reviewResponse = response.data.data.choices[0].message.content;
 
@@ -174,11 +180,12 @@ const Applications = (props) => {
         },
       });
       const applicationsData = response.data.data;
+
       const updatedApplications = await Promise.all(
         applicationsData.map(async (application) => {
           const userId = application.applicantId;
           const userUrl = apiList.getUserDetails + `${userId}`;
-          const jobUrl = apiList.getJobs + "648f11f79fd225b5d446f10a";
+          const jobUrl = apiList.getJobs + `${application.jobId}`;
           const [userResponse, jobResponse] = await Promise.all([
             axios.get(userUrl),
             axios.get(jobUrl),
@@ -204,83 +211,181 @@ const Applications = (props) => {
     }
   };
 
+  const updateApplication = () => {
+    let url = `${apiList.updateApplication}/${application._id}/update`;
+    axios
+      .post(
+        url,
+        {
+          applicationId: application._id,
+          action: action,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      )
+      .then((response) => {
+        notifications.show({
+          title: "Success",
+          message: response.data.message,
+        });
+        getData();
+      })
+      .catch((err) => {
+        notifications.show({
+          title: "error",
+          message: err.response.data.message,
+        });
+      });
+  };
+
   return (
-    <div>
-      <TextInput
-        className={classes.searchBar}
-        value={searchTerm}
-        onChange={(event) => setSearchTerm(event.target.value)}
-        placeholder="Search by title"
-      />
+    <>
+      <Modal
+        opened={opened}
+        onClose={() => {
+          setOpened(false);
+          setAction("");
+        }}
+        title="Update Application"
+        centered
+      >
+        <div style={{ marginTop: 20 }}>
+          <label>
+            <input
+              type="radio"
+              name="status"
+              value="reject"
+              onChange={() => setAction("reject")}
+            />
+            Reject
+          </label>
+          <label style={{ marginLeft: 20 }}>
+            <input
+              type="radio"
+              name="status"
+              value="accept"
+              onChange={() => setAction("accept")}
+            />
+            Move Forward
+          </label>
+        </div>
 
-      {applications.map((application, index) => (
-        <Paper key={index} className={classes.applicationItem}>
-          <div className={classes.applicationDetails}>
-            <Text
-              className={classes.applicationTitle}
-              size="lg"
-              weight={500}
-              color="white"
-            >
-              {application.job.data.title}
-            </Text>
-            <Text size="md">{application.job.data.description}</Text>
-
-            <Text size="lg" color="white">
-              {application.user.data.name}
-            </Text>
-
-            <Button
-              onClick={() => handleExpandUser(application.user.data._id)}
-              variant="link"
-              color="blue"
-              size="xs"
-            >
-              {"show more ->"}
-            </Button>
-
-            {expandedUser === application.user.data._id && (
-              <div className={classes.userCard}>
-                <Text>Email: {application.user.data.email}</Text>
-                <Text>Bio: {application.user.data.bio}</Text>
-                <Text>Age: {application.user.data.age}</Text>
-                <Text>Resume</Text>
-                <Button
-                  onClick={() =>
-                    getReview(
-                      application.user.data._id,
-                      application.job.data.description
-                    )
-                  }
-                  variant="outline"
-                  color="blue"
-                  size="sm"
-                >
-                  Ask AI for review
-                </Button>
-              </div>
-            )}
-
-            {reviewResponses[application.user.data._id] && (
-              <div>
-                <Text weight="bold" color="blue">
-                  AI Review of applicant:
-                </Text>
-                {reviewResponses[application.user.data._id]}
-              </div>
-            )}
-          </div>
-          <Button
-            onClick={() => handleUpdateApplication(application._id)}
-            variant="outline"
-            color="blue"
-            size="sm"
-          >
-            Update Application
+        <div style={{ marginTop: 20 }}>
+          <Button variant="outline" onClick={() => setOpened(false)}>
+            Cancel
           </Button>
-        </Paper>
-      ))}
-    </div>
+          <span style={{ marginLeft: 20 }}>
+            <Button
+              variant="filled"
+              color="blue"
+              onClick={() => {
+                setOpened(false);
+                updateApplication();
+              }}
+              disabled={!action}
+            >
+              Save Changes
+            </Button>
+          </span>
+        </div>
+      </Modal>
+
+      <div>
+        <TextInput
+          className={classes.searchBar}
+          value={searchTerm}
+          onChange={(event) => setSearchTerm(event.target.value)}
+          placeholder="Search by title"
+        />
+
+        {applications.length === 0 ? (
+          <Paper className={classes.noJobsMessage}>
+            <Text>No Application found</Text>
+          </Paper>
+        ) : (
+          applications.map((application, index) => (
+            <Paper key={index} className={classes.applicationItem}>
+              <div className={classes.applicationDetails}>
+                <Text
+                  className={classes.applicationTitle}
+                  size="lg"
+                  weight={500}
+                  color="white"
+                >
+                  {application.job.data.title}
+                </Text>
+                <Text size="md">{application.job.data.description}</Text>
+                <Text size="md">
+                  Total Rounds: {application.job.data.noOfRounds}
+                </Text>
+
+                <Text size="lg" color="white">
+                  {application.user.data.name}
+                </Text>
+
+                <Button
+                  onClick={() => handleExpandUser(application._id)}
+                  variant="link"
+                  color="blue"
+                  size="xs"
+                >
+                  {"show more ->"}
+                </Button>
+
+                {expandedUser === application._id && (
+                  <div className={classes.userCard}>
+                    <Text>Email: {application.user.data.email}</Text>
+                    <Text>Bio: {application.user.data.bio}</Text>
+                    <Text>Current Round: {application.currentRound}</Text>
+                    <Text>Status: {application.status}</Text>
+                    <Button
+                      onClick={() =>
+                        getReview(
+                          application.user.data._id,
+                          application.job.data.description
+                        )
+                      }
+                      variant="outline"
+                      color="blue"
+                      size="sm"
+                    >
+                      Ask AI for review
+                    </Button>
+                  </div>
+                )}
+
+                {reviewResponses[application.user.data._id] && (
+                  <div>
+                    <Text weight="bold" color="blue">
+                      AI Review of applicant:
+                    </Text>
+                    {reviewResponses[application.user.data._id]}
+                  </div>
+                )}
+              </div>
+              <Button
+                onClick={() => {
+                  setOpened(true);
+                  setApplication(application);
+                }}
+                variant="outline"
+                color="blue"
+                size="sm"
+                disabled={
+                  application.status == "rejected" ||
+                  application.status == "hired"
+                }
+              >
+                Update Application
+              </Button>
+            </Paper>
+          ))
+        )}
+      </div>
+    </>
   );
 };
 

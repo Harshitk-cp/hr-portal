@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import { useState } from "react";
 import {
   Group,
@@ -10,7 +11,6 @@ import {
   rem,
 } from "@mantine/core";
 import { ArrowUpIcon, ArrowRightIcon } from "@radix-ui/react-icons";
-import { useNavigate } from "react-router-dom";
 
 const useStyles = createStyles((theme) => ({
   control: {
@@ -67,7 +67,6 @@ export function LinksGroup({
   links,
   link,
 }) {
-  let navigateTo = useNavigate();
   const { classes, theme } = useStyles();
   const hasLinks = Array.isArray(links);
   const [opened, setOpened] = useState(initiallyOpened || false);

@@ -26,6 +26,15 @@ const useStyles = createStyles((theme) => ({
       theme.colorScheme === "dark" ? theme.colors.dark[6] : theme.white,
     borderRadius: theme.radius.md,
   },
+  noJobsMessage: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    width: "100%",
+    height: "200px",
+    backgroundColor: theme.colors.dark[6],
+    marginTop: "20px",
+  },
 }));
 
 const Home = (props) => {
@@ -33,17 +42,18 @@ const Home = (props) => {
   const [loading, setLoading] = useState(true);
   const { classes } = useStyles();
   const [applications, setApplications] = useState([]);
-  const [loggedin, setLoggedin] = useState(isAuth());
+  const [loggedin] = useState(isAuth());
 
   useEffect(() => {
+    // eslint-disable-next-line react/prop-types
+    props.funcNav(true);
     getJobs();
     getApplications();
   }, []);
 
   const getJobs = () => {
     let url = apiList.getJobs;
-    console.log(localStorage.getItem("token"));
-    console.log(localStorage.getItem("userId"));
+
     axios
       .get(url, {
         headers: {
@@ -53,7 +63,6 @@ const Home = (props) => {
       .then((response) => {
         setJobs(response.data.data);
         setLoading(false);
-        console.log(response);
       })
       .catch((err) => {
         console.error(err);
@@ -73,28 +82,27 @@ const Home = (props) => {
       })
       .then((response) => {
         setApplications(response.data.data);
-        console.log(response);
       })
       .catch((err) => {
         console.error(err);
       });
   };
 
-  // Calculate the count of selected, rejected, and ongoing applications for all jobs
+  // Calculate the count of hired, rejected, and ongoing applications for all jobs
   const calculateApplicationStatus = () => {
     const counts = {
-      selected: 0,
+      hired: 0,
       rejected: 0,
       ongoing: 0,
       applied: 0,
     };
 
     applications.forEach((application) => {
-      if (application.status === "Selected") {
-        counts.selected++;
-      } else if (application.status === "Rejected") {
+      if (application.status === "hired") {
+        counts.hired++;
+      } else if (application.status === "rejected") {
         counts.rejected++;
-      } else if (application.status === "Ongoing") {
+      } else if (application.status === "ongoing") {
         counts.ongoing++;
       } else if (application.status === "Applied") {
         counts.applied++;
@@ -135,9 +143,9 @@ const Home = (props) => {
               tooltip: `Ongoing: ${applicationStatus.ongoing}`,
             },
             {
-              value: (applicationStatus.selected / totalApplications) * 100,
+              value: (applicationStatus.hired / totalApplications) * 100,
               color: "green",
-              tooltip: `Selected: ${applicationStatus.selected}`,
+              tooltip: `Hired: ${applicationStatus.hired}`,
             },
             {
               value: (applicationStatus.rejected / totalApplications) * 100,
@@ -157,26 +165,19 @@ const Home = (props) => {
         <Text variant="h3" className={classes.heading}>
           Jobs
         </Text>
-        {jobs.map((job) => (
-          <Paper key={job._id} className={classes.jobItem}>
-            {/* Display job information here */}
-            <Text variant="h4">{job.title}</Text>
-            <Text>{job.description}</Text>
+        {jobs.length === 0 ? (
+          <Paper className={classes.noJobsMessage}>
+            <Text>No Jobs found</Text>
           </Paper>
-        ))}
-      </div>
-
-      <div className={classes.section}>
-        <Text variant="h3" className={classes.heading}>
-          Applications
-        </Text>
-        {applications.map((application) => (
-          <Paper key={application._id} className={classes.applicationItem}>
-            {/* Display application information here */}
-            <Text variant="h4">Application ID: {application._id}</Text>
-            <Text>Status: {application.status}</Text>
-          </Paper>
-        ))}
+        ) : (
+          jobs.map((job) => (
+            <Paper key={job._id} className={classes.jobItem}>
+              <Text variant="h4">Title: {job.title}</Text>
+              <Text>Description: {job.description}</Text>
+              <Text>Total Applicants: {job.applicants.length}</Text>
+            </Paper>
+          ))
+        )}
       </div>
     </div>
   ) : (

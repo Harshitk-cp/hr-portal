@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Button,
   createStyles,
@@ -33,7 +33,7 @@ const useStyles = createStyles((theme) => ({
     alignItems: "center",
     justifyContent: "center",
     width: "400px",
-    background: "#ffffff",
+    background: theme.colors.dark[5],
     padding: "40px",
     borderRadius: "8px",
   },
@@ -44,12 +44,15 @@ const useStyles = createStyles((theme) => ({
     width: "300px",
     color: "white",
     marginTop: "20px",
-    background: "#1c1d26",
+    background: theme.colors.blue[7],
   },
 }));
 
 const Login = (props) => {
-  props.funcNav(false);
+  useEffect(() => {
+    // eslint-disable-next-line react/prop-types
+    props.funcNav(false);
+  }, []);
   const { classes } = useStyles();
   const navigate = useNavigate();
 
@@ -169,12 +172,8 @@ const Login = (props) => {
           Login
         </Button>
 
-        <Text
-          color="black"
-          sx={{ cursor: "pointer" }}
-          onClick={() => navigate("/signup")}
-        >
-          Don't have an account? Sign Up
+        <Text sx={{ cursor: "pointer" }} onClick={() => navigate("/signup")}>
+          Don&apos;t have an account? Sign Up
         </Text>
       </div>
     </div>
