@@ -1,4 +1,7 @@
 import { useState, useEffect } from "react";
+import { Document, Page, pdfjs } from "react-pdf";
+import "react-pdf/dist/Page/TextLayer.css";
+import "react-pdf/dist/Page/AnnotationLayer.css";
 
 import axios from "axios";
 
@@ -13,6 +16,8 @@ import {
 } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { CheckIcon, CrossCircledIcon } from "@radix-ui/react-icons";
+
+pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
 
 const useStyles = createStyles((theme) => ({
   applicationItem: {
@@ -51,6 +56,9 @@ const useStyles = createStyles((theme) => ({
     backgroundColor: theme.colors.dark[6],
     marginTop: "20px",
   },
+  btnResumeGroup: {
+    marginTop: "20px",
+  },
 }));
 
 const Applications = () => {
@@ -62,7 +70,11 @@ const Applications = () => {
   const [originalApplications, setOriginalApplications] = useState([]);
   const [reviewResponses, setReviewResponses] = useState({});
   const [opened, setOpened] = useState(false);
+  const [resumeOpened, setResumeOpened] = useState(false);
   const [action, setAction] = useState("");
+  const [selectedResume, setSelectedResume] = useState(null);
+  const [numPages, setNumPages] = useState();
+  const [pageNumber, setPageNumber] = useState(1);
 
   useEffect(() => {
     getData();
@@ -70,7 +82,7 @@ const Applications = () => {
 
   useEffect(() => {
     filterApplications();
-  }, [searchTerm]);
+  });
 
   const filterApplications = () => {
     if (searchTerm.trim() === "") {
@@ -79,7 +91,7 @@ const Applications = () => {
     } else {
       // Filter applications based on the search term
       const filteredApplications = originalApplications.filter((application) =>
-        application.user.data.name
+        application.job.data.title
           .toLowerCase()
           .includes(searchTerm.toLowerCase())
       );
@@ -93,6 +105,15 @@ const Applications = () => {
     } else {
       setExpandedUser(userId);
     }
+  };
+
+  function onDocumentLoadSuccess({ numPages }) {
+    setNumPages(numPages);
+  }
+
+  const viewResume = (resumeData) => {
+    const { buffer } = new Uint8Array(resumeData.data);
+    setSelectedResume(buffer);
   };
 
   const getReview = async (userId, description) => {
@@ -293,6 +314,53 @@ const Applications = () => {
         </div>
       </Modal>
 
+      <Modal
+        opened={resumeOpened}
+        onClose={() => {
+          setResumeOpened(false);
+        }}
+        transitionProps={{ transition: "fade", duration: 200 }}
+        title="RESUME"
+        size={"auto"}
+        centered
+      >
+        <div style={{ marginTop: 20 }}>
+          {
+            <div className="pdf-container">
+              {selectedResume && (
+                <div>
+                  <Document
+                    file={selectedResume}
+                    onLoadSuccess={onDocumentLoadSuccess}
+                  >
+                    <Page pageNumber={pageNumber} />
+                  </Document>
+                  <p style={{ textAlign: "center" }}>
+                    Page {pageNumber} of {numPages}
+                  </p>
+                  <div
+                    style={{ display: "flex", justifyContent: "space-between" }}
+                  >
+                    <button
+                      onClick={() => setPageNumber(Math.max(pageNumber - 1, 1))}
+                    >
+                      &lt; Prev
+                    </button>
+                    <button
+                      onClick={() =>
+                        setPageNumber(Math.min(pageNumber + 1, numPages))
+                      }
+                    >
+                      Next &gt;
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          }
+        </div>
+      </Modal>
+
       <div>
         <TextInput
           className={classes.searchBar}
@@ -341,30 +409,46 @@ const Applications = () => {
                     <Text>Bio: {application.user.data.bio}</Text>
                     <Text>Current Round: {application.currentRound}</Text>
                     <Text>Status: {application.status}</Text>
-                    <Button
-                      onClick={() =>
-                        getReview(
-                          application.user.data._id,
-                          application.job.data.description
-                        )
-                      }
-                      variant="outline"
-                      color="blue"
-                      size="sm"
-                    >
-                      Ask AI for review
-                    </Button>
+                    <div className={classes.btnResumeGroup}>
+                      <Button
+                        onClick={() =>
+                          getReview(
+                            application.user.data._id,
+                            application.job.data.description
+                          )
+                        }
+                        variant="outline"
+                        color="blue"
+                        size="sm"
+                        style={{ marginRight: "10px" }}
+                      >
+                        Ask AI for review
+                      </Button>
+
+                      <Button
+                        onClick={() => {
+                          viewResume(application.user.data.resume);
+                          setResumeOpened(true);
+                        }}
+                        variant="outline"
+                        color="blue"
+                        size="sm"
+                      >
+                        View Resume
+                      </Button>
+                    </div>
                   </div>
                 )}
 
-                {reviewResponses[application.user.data._id] && (
-                  <div>
-                    <Text weight="bold" color="blue">
-                      AI Review of applicant:
-                    </Text>
-                    {reviewResponses[application.user.data._id]}
-                  </div>
-                )}
+                {expandedUser === application._id &&
+                  reviewResponses[application.user.data._id] && (
+                    <div>
+                      <Text weight="bold" color="blue">
+                        AI Review of applicant:
+                      </Text>
+                      {reviewResponses[application.user.data._id]}
+                    </div>
+                  )}
               </div>
               <Button
                 onClick={() => {

@@ -109,7 +109,6 @@ const Jobs = () => {
         },
       })
       .then((response) => {
-        console.log(response);
         notifications.show({
           title: "Success",
           message: response.data.message,
@@ -117,7 +116,6 @@ const Jobs = () => {
         getData();
       })
       .catch((err) => {
-        console.log(err);
         notifications.show({
           title: "error",
           message: err.response.data.message,
@@ -126,7 +124,6 @@ const Jobs = () => {
   };
 
   const updateJob = () => {
-    console.log(jobId);
     let url = `${apiList.updateJob}/${jobId}`;
     axios
       .put(
@@ -152,7 +149,6 @@ const Jobs = () => {
         }
       )
       .then((response) => {
-        console.log(response);
         notifications.show({
           title: "Success",
           message: response.data.message,
@@ -160,7 +156,6 @@ const Jobs = () => {
         getData();
       })
       .catch((err) => {
-        console.log(err);
         notifications.show({
           title: "error",
           message: err.response.data.message,

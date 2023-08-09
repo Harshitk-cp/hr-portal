@@ -1,4 +1,5 @@
-export const server = "http://localhost:8000/api/v1";
+// export const server = `http://${window.location.hostname}:3005/api/v1`;
+export const server = `http://localhost:8000/api/v1`;
 
 const apiList = {
   login: `${server}/users/login`,

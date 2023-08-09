@@ -61,7 +61,6 @@ const CreateJobs = () => {
         }
       )
       .then((response) => {
-        console.log(response);
         notifications.show({
           title: "Success",
           message: response.data.message,
@@ -69,7 +68,6 @@ const CreateJobs = () => {
         clearFields();
       })
       .catch((err) => {
-        console.log(err);
         notifications.show({
           title: "error",
           message: err.response.data.message,

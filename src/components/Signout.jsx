@@ -2,8 +2,7 @@ import { notifications } from "@mantine/notifications";
 import { useEffect } from "react";
 import { Navigate } from "react-router-dom";
 
-const Signout = (props) => {
-  props.funcNav(false);
+const Signout = () => {
   useEffect(() => {
     localStorage.removeItem("token");
     localStorage.removeItem("userId");
